@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LO QUE TOCA TOCA, LA SUERTE ES LOCA</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+    
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: radial-gradient(circle at top right, #1e1b4b, #0f172a, #020617);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    
+    .glow-purple {
+      box-shadow: 0 0 30px -5px rgba(168, 85, 247, 0.4);
+    }
+
+    /* Scrollbar Estilizado */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.6);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(168, 85, 247, 0.4);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(168, 85, 247, 0.6);
+    }
+  </style>
+</head>
+<body class="text-slate-100 antialiased p-4 md:p-8">
+
+  <div class="max-w-7xl mx-auto">
+    <!-- Encabezado Principal -->
+    <header class="text-center mb-8 mt-4">
+      <h1 class="text-3xl md:text-5xl font-black tracking-tight leading-tight">
+        <span class="bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-500 bg-clip-text text-transparent">LO QUE TOCA TOCA,</span><br class="hidden md:block">
+        <span class="bg-gradient-to-r from-pink-500 via-rose-400 to-amber-300 bg-clip-text text-transparent">LA SUERTE ES LOCA</span>
+      </h1>
+    </header>
+
+    <!-- Panel de control & Contenedor de Ruleta -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      
+      <!-- COLUMNA IZQUIERDA: Ajustes y Nombres -->
+      <div class="lg:col-span-5 space-y-6">
+        
+        <!-- Tarjeta de Nombres -->
+        <div class="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 backdrop-blur-xl glow-purple">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-lg font-bold flex items-center gap-2">
+              <i class="fa-solid fa-users text-purple-400"></i>
+              Participantes
+            </h2>
+            <span id="names-count" class="text-xs bg-purple-500/20 text-purple-300 px-3 py-1 rounded-full font-semibold border border-purple-500/20">
+              0 nombres
+            </span>
+          </div>
+
+          <!-- Input para agregar nuevos nombres -->
+          <div class="flex gap-2 mb-4">
+            <input 
+              type="text" 
+              id="name-input" 
+              placeholder="Escribe un nombre y presiona Enter..." 
+              class="flex-1 bg-slate-950/80 border border-slate-800 hover:border-purple-500/50 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 rounded-2xl px-4 py-3 text-sm text-slate-100 outline-none transition-all placeholder:text-slate-500"
+              onkeydown="if(event.key === 'Enter') addName()"
+            >
+            <button 
+              onclick="addName()" 
+              class="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold px-5 rounded-2xl transition-all shadow-md flex items-center justify-center"
+            >
+              <i class="fa-solid fa-plus text-lg"></i>
+            </button>
+          </div>
+
+          <!-- Acciones rápidas -->
+          <div class="flex gap-2 mb-4 justify-between">
+            <button 
+              onclick="loadDemoNames()" 
+              class="text-xs text-indigo-400 hover:text-indigo-300 font-medium flex items-center gap-1.5 transition-colors"
+            >
+              <i class="fa-solid fa-wand-magic-sparkles"></i> Cargar lista demo
+            </button>
+            <button 
+              onclick="clearNames()" 
+              class="text-xs text-rose-400 hover:text-rose-300 font-medium flex items-center gap-1.5 transition-colors"
+            >
+              <i class="fa-solid fa-trash-can"></i> Limpiar todo
+            </button>
+          </div>
+
+          <!-- Lista de nombres con scroll -->
+          <div 
+            id="names-list" 
+            class="max-h-48 overflow-y-auto space-y-2 pr-1 rounded-xl bg-slate-950/40 p-2 border border-slate-900/60"
+          >
+            <!-- Renderizado dinámico desde JS -->
+            <div id="empty-state" class="text-center py-8 text-slate-500 text-xs">
+              <i class="fa-solid fa-user-slash text-2xl mb-2 block opacity-40"></i>
+              No hay nombres en la lista. ¡Agrega algunos!
+            </div>
+          </div>
+        </div>
+
+        <!-- Tarjeta de Controles de Física y Aleatoriedad -->
+        <div class="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 backdrop-blur-xl">
+          <h2 class="text-lg font-bold mb-5 flex items-center gap-2">
+            <i class="fa-solid fa-sliders text-pink-400"></i>
+            Configuración
+          </h2>
+
+          <!-- Slider de Aleatoriedad Suave -->
+          <div class="space-y-2 mb-6">
+            <div class="flex justify-between items-center">
+              <label class="text-sm font-semibold text-slate-300 flex items-center gap-1.5">
+                <i class="fa-solid fa-shuffle text-indigo-400"></i>
+                Densidad de la Ruleta
+              </label>
+              <span id="randomness-value" class="text-xs font-bold text-indigo-300 bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">
+                Poco Aleatorio (1x)
+              </span>
+            </div>
+            <input 
+              type="range" 
+              id="randomness-slider" 
+              min="1" 
+              max="100" 
+              value="1" 
+              class="w-full accent-indigo-500 cursor-pointer h-2 bg-slate-950 rounded-lg appearance-none"
+              oninput="updateRandomnessLabel()"
+            >
+          </div>
+
+          <!-- Slider de Fuerza de Giro -->
+          <div class="space-y-2">
+            <div class="flex justify-between items-center">
+              <label class="text-sm font-semibold text-slate-300 flex items-center gap-1.5">
+                <i class="fa-solid fa-gauge-high text-pink-400"></i>
+                Fuerza de Giro del Botón
+              </label>
+              <span id="strength-value" class="text-xs font-bold text-pink-300 bg-pink-500/10 px-2 py-0.5 rounded border border-pink-500/20">
+                Fuerza 1 (Giro Suave)
+              </span>
+            </div>
+            <input 
+              type="range" 
+              id="strength-slider" 
+              min="1" 
+              max="10" 
+              value="1" 
+              class="w-full accent-pink-500 cursor-pointer h-2 bg-slate-950 rounded-lg appearance-none"
+              oninput="updateStrengthLabel()"
+            >
+          </div>
+        </div>
+
+      </div>
+
+      <!-- COLUMNA DERECHA: La Ruleta en Acción -->
+      <div class="lg:col-span-7 flex flex-col items-center">
+        
+        <!-- Contenedor del Juego -->
+        <div class="relative w-full max-w-[500px] aspect-square flex items-center justify-center mb-6">
+          
+          <!-- Efecto de resplandor de fondo (Estatico para evitar repaints continuos) -->
+          <div class="absolute inset-0 bg-gradient-to-tr from-purple-600/10 to-pink-500/10 rounded-full blur-3xl -z-10 opacity-60"></div>
+
+          <!-- Marcador/Flecha Indicadora Superior (Estático, sin rebote) -->
+          <div class="absolute -top-1 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center filter drop-shadow-[0_8px_16px_rgba(244,63,94,0.4)]">
+            <div class="w-8 h-10 bg-gradient-to-b from-rose-500 via-pink-500 to-rose-600 rounded-b-full rounded-t-xl flex items-center justify-center shadow-lg border border-white/20">
+              <i class="fa-solid fa-chevron-down text-white text-lg mt-1"></i>
+            </div>
+            <div class="w-1.5 h-1.5 bg-white rounded-full mt-1"></div>
+          </div>
+
+          <!-- Canvas para Dibujar la Ruleta -->
+          <div class="relative w-full h-full rounded-full border-8 border-slate-950/80 bg-slate-950 p-1 shadow-2xl overflow-hidden hover:scale-[1.01] transition-transform duration-300">
+            <!-- Capa externa brillante -->
+            <div class="absolute inset-0 rounded-full border border-white/10 pointer-events-none z-10"></div>
+            
+            <canvas id="wheel-canvas" class="w-full h-full cursor-grab active:cursor-grabbing rounded-full"></canvas>
+            
+            <!-- Centro de la Ruleta (Pin central metálico) -->
+            <div class="absolute inset-0 m-auto w-16 h-16 rounded-full bg-gradient-to-br from-slate-800 via-slate-950 to-slate-900 border-4 border-slate-950 flex items-center justify-center shadow-[0_4px_10px_rgba(0,0,0,0.5)] z-20 pointer-events-none">
+              <div class="w-6 h-6 rounded-full bg-gradient-to-tr from-pink-500 to-purple-600 shadow-[inset_0_2px_4px_rgba(255,255,255,0.4)]"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel Inferior de Botones e Instrucciones -->
+        <div class="w-full max-w-[500px]">
+          <!-- Botón de Giro -->
+          <button 
+            id="spin-button"
+            onclick="spin()"
+            class="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-purple-600 via-pink-600 to-amber-500 hover:from-purple-500 hover:via-pink-500 hover:to-amber-400 font-extrabold text-lg tracking-wider text-white shadow-lg shadow-pink-500/20 active:scale-[0.98] transition-all flex items-center justify-center gap-3"
+          >
+            <i class="fa-solid fa-circle-notch animate-spin text-xl hidden" id="spin-spinner"></i>
+            <i class="fa-solid fa-arrows-spin text-xl" id="spin-icon"></i>
+            <span id="spin-text">¡GIRAR RULETA!</span>
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL / BANNER DE GANADOR -->
+  <div 
+    id="winner-modal" 
+    class="fixed inset-0 bg-slate-950/90 backdrop-blur-md flex items-center justify-center z-50 p-4 opacity-0 pointer-events-none transition-all duration-300"
+  >
+    <div class="bg-gradient-to-b from-slate-900 to-slate-950 border border-purple-500/30 rounded-3xl p-8 max-w-md w-full text-center relative shadow-[0_0_50px_rgba(168,85,247,0.3)]">
+      <!-- Decoración superior -->
+      <div class="absolute -top-12 left-1/2 -translate-x-1/2 bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-600 w-24 h-24 rounded-full flex items-center justify-center shadow-lg border-4 border-slate-950">
+        <i class="fa-solid fa-trophy text-white text-4xl"></i>
+      </div>
+
+      <div class="mt-8 space-y-4">
+        <p class="text-xs font-semibold tracking-widest text-amber-400 uppercase">¡Tenemos un ganador!</p>
+        <h3 id="winner-name" class="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 via-amber-300 to-yellow-500 break-words line-clamp-2 px-2">
+          -
+        </h3>
+
+        <!-- Botones de Acción en Ganador -->
+        <div class="pt-4 flex gap-3">
+          <button 
+            onclick="closeWinnerModal()" 
+            class="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-xl text-sm transition-all"
+          >
+            Cerrar
+          </button>
+          <button 
+            onclick="removeWinnerAndClose()" 
+            class="flex-1 py-3 bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white font-bold rounded-xl text-sm transition-all"
+          >
+            Quitar de Lista y Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPT DE LÓGICA PRINCIPAL -->
+  <script>
+    // Variables de Estado
+    let rawNames = []; // Nombres base agregados por el usuario
+    let wheelSegments = []; // Nombres finales proyectados en la ruleta
+    let segmentColors = []; // Colores correspondientes a cada segmento de la ruleta
+    let needsRedraw = true; // Flag de optimización para redibujar sólo cuando cambie algo
+
+    // Canvas de renderizado fuera de pantalla (Off-screen Canvas Cache)
+    const cacheCanvas = document.createElement('canvas');
+    const cacheCtx = cacheCanvas.getContext('2d');
+
+    // Física e Interacción
+    let rotation = 0; // Ángulo actual de rotación (radianes)
+    let angularVelocity = 0; // Velocidad de giro actual (radianes por cuadro)
+    let isSpinning = false; // ¿Está girando automáticamente?
+    let friction = 0.985; // Factor de desaceleración física (fricción estable)
+    
+    // Control de Arrastre Manual
+    let isDragging = false;
+    let startAngle = 0;
+    let lastAngle = 0;
+    let lastTime = 0;
+    let dragVelocityHistory = []; // Almacena velocidad en los últimos cuadros para lanzar
+
+    // Elementos del DOM
+    const canvas = document.getElementById('wheel-canvas');
+    const ctx = canvas.getContext('2d');
+    const nameInput = document.getElementById('name-input');
+    const namesList = document.getElementById('names-list');
+    const namesCountLabel = document.getElementById('names-count');
+    const emptyState = document.getElementById('empty-state');
+    
+    // Sliders & Labels
+    const randomnessSlider = document.getElementById('randomness-slider');
+    const randomnessValue = document.getElementById('randomness-value');
+    
+    const strengthSlider = document.getElementById('strength-slider');
+    const strengthValue = document.getElementById('strength-value');
+
+    // UI de Ganador & Botón
+    const winnerModal = document.getElementById('winner-modal');
+    const winnerNameSpan = document.getElementById('winner-name');
+    const spinButton = document.getElementById('spin-button');
+    const spinSpinner = document.getElementById('spin-spinner');
+    const spinIcon = document.getElementById('spin-icon');
+    const spinText = document.getElementById('spin-text');
+
+    // Inicializar Audio Context (Web Audio API) para sonidos físicos sin archivos externos
+    let audioCtx = null;
+    function playTickSound() {
+      try {
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+        
+        const osc = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        
+        // Simular el chasquido ("click/tick") agudo y seco de un golpeador real de plástico
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(1200, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(150, audioCtx.currentTime + 0.015);
+        
+        gainNode.gain.setValueAtTime(0.06, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.015);
+        
+        osc.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.02);
+      } catch (e) {
+        // Silencio si Web Audio no está permitido
+      }
+    }
+
+    // Tocar un acorde arpegiado alegre y triunfal como sonido de victoria (Do Mayor)
+    function playVictorySound() {
+      try {
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+
+        const now = audioCtx.currentTime;
+        
+        function playNote(freq, startTime, duration, type = 'sine', volume = 0.1) {
+          const osc = audioCtx.createOscillator();
+          const gainNode = audioCtx.createGain();
+          
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, startTime);
+          
+          gainNode.gain.setValueAtTime(0, startTime);
+          gainNode.gain.linearRampToValueAtTime(volume, startTime + 0.05);
+          gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+          
+          osc.connect(gainNode);
+          gainNode.connect(audioCtx.destination);
+          
+          osc.start(startTime);
+          osc.stop(startTime + duration);
+        }
+
+        // Arpegio ascendente Do, Mi, Sol, Do (brillante)
+        const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+        notes.forEach((freq, index) => {
+          playNote(freq, now + index * 0.1, 0.8, 'triangle', 0.1);
+          playNote(freq, now + index * 0.1, 0.6, 'sine', 0.05);
+        });
+
+        // Bajo de acompañamiento para dar cuerpo al sonido de logro
+        playNote(261.63, now, 1.2, 'sine', 0.12); // C4
+        playNote(392.00, now + 0.1, 1.1, 'sine', 0.08); // G4
+      } catch (e) {
+        // Silencio si Web Audio no está disponible
+      }
+    }
+
+    // Adaptar Canvas al tamaño de su contenedor (OPTIMIZADO PARA RETINA Y 4K SIN LAG)
+    function resizeCanvas() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      
+      if (rect.width <= 0 || rect.height <= 0) return;
+
+      // Ponemos un límite de resolución estricto (800px) para evitar renders gigantes en 4K que causan lag
+      let targetWidth = rect.width * dpr;
+      let targetHeight = rect.height * dpr;
+      const maxDimension = 800;
+
+      if (targetWidth > maxDimension || targetHeight > maxDimension) {
+        const ratio = rect.width / rect.height;
+        if (rect.width > rect.height) {
+          targetWidth = maxDimension;
+          targetHeight = maxDimension / ratio;
+        } else {
+          targetHeight = maxDimension;
+          targetWidth = maxDimension * ratio;
+        }
+      }
+
+      canvas.width = targetWidth;
+      canvas.height = targetHeight;
+
+      // Mantener sincronizado el Canvas de Caché
+      cacheCanvas.width = canvas.width;
+      cacheCanvas.height = canvas.height;
+      
+      rebuildWheelCache();
+      needsRedraw = true;
+    }
+    
+    window.addEventListener('resize', resizeCanvas);
+    window.addEventListener('load', () => {
+      loadDemoNames();
+      resizeCanvas();
+      requestAnimationFrame(gameLoop);
+    });
+
+    // Cargar nombres por defecto para que la app inicie colorida
+    function loadDemoNames() {
+      rawNames = [
+        "Sofía", "Alejandro", "Valentina", "Mateo", "Camila", 
+        "Santiago", "Mariana", "Sebastián", "Gabriela", "Daniel"
+      ];
+      updateUI();
+    }
+
+    // Agregar nuevo nombre
+    function addName() {
+      const value = nameInput.value.trim();
+      if (value) {
+        if (value.includes(',')) {
+          const splitNames = value.split(',').map(n => n.trim()).filter(n => n.length > 0);
+          rawNames.push(...splitNames);
+        } else {
+          rawNames.push(value);
+        }
+        nameInput.value = '';
+        updateUI();
+      }
+    }
+
+    // Eliminar nombre individual
+    function removeName(index) {
+      rawNames.splice(index, 1);
+      updateUI();
+    }
+
+    // Limpiar toda la lista
+    function clearNames() {
+      rawNames = [];
+      updateUI();
+    }
+
+    // Actualiza la lista en pantalla y recalcula los sectores de la ruleta
+    function updateUI() {
+      if (rawNames.length === 0) {
+        emptyState.classList.remove('hidden');
+        namesList.innerHTML = '';
+        emptyState.parentNode.appendChild(emptyState); 
+      } else {
+        emptyState.classList.add('hidden');
+        namesList.innerHTML = '';
+        
+        rawNames.forEach((name, idx) => {
+          const item = document.createElement('div');
+          item.className = "flex items-center justify-between bg-slate-950/60 hover:bg-slate-950/90 border border-slate-900 px-4 py-2.5 rounded-xl transition-colors group";
+          item.innerHTML = `
+            <span class="text-sm font-medium text-slate-200 truncate pr-2">${name}</span>
+            <button onclick="removeName(${idx})" class="text-slate-500 hover:text-rose-400 transition-colors p-1 opacity-80 group-hover:opacity-100">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          `;
+          namesList.appendChild(item);
+        });
+      }
+
+      namesCountLabel.textContent = `${rawNames.length} ${rawNames.length === 1 ? 'nombre' : 'nombres'}`;
+      
+      rebuildWheelSegments();
+    }
+
+    // Construye la lista de segmentos basados en la barra de aleatoriedad
+    function rebuildWheelSegments() {
+      if (rawNames.length === 0) {
+        wheelSegments = [];
+        segmentColors = [];
+        rebuildWheelCache();
+        needsRedraw = true;
+        return;
+      }
+
+      const multFactor = parseInt(randomnessSlider.value); // Rango suave: 1 a 100
+      
+      if (multFactor === 1) {
+        wheelSegments = [...rawNames];
+      } else {
+        const minTarget = Math.max(rawNames.length, Math.floor(rawNames.length + (100 - rawNames.length) * (multFactor - 1) / 99));
+        const repeats = Math.ceil(minTarget / rawNames.length);
+        
+        let repeatedList = [];
+        for (let i = 0; i < repeats; i++) {
+          repeatedList.push(...rawNames);
+        }
+        
+        wheelSegments = repeatedList;
+      }
+
+      segmentColors = generateColorPalette(wheelSegments.length);
+      rebuildWheelCache();
+      needsRedraw = true;
+    }
+
+    // Paleta de colores gradientes y neón
+    function generateColorPalette(count) {
+      const colors = [];
+      for (let i = 0; i < count; i++) {
+        const hue = Math.floor((i * 360) / count);
+        colors.push(`hsl(${hue}, 85%, 55%)`);
+      }
+      return colors;
+    }
+
+    // Actualiza el texto descriptivo del slider de aleatoriedad (suave)
+    function updateRandomnessLabel() {
+      const val = parseInt(randomnessSlider.value);
+      if (val === 1) {
+        randomnessValue.textContent = "Poco Aleatorio (1x)";
+      } else if (val === 100) {
+        randomnessValue.textContent = "Máxima Densidad (100+ items)";
+      } else {
+        const approxMultiplier = (1 + (val - 1) * 9 / 99).toFixed(1);
+        randomnessValue.textContent = `Densidad Ampliada (${approxMultiplier}x)`;
+      }
+      rebuildWheelSegments();
+    }
+
+    // Actualiza el texto descriptivo del slider de fuerza
+    function updateStrengthLabel() {
+      const val = parseInt(strengthSlider.value);
+      if (val === 1) {
+        strengthValue.textContent = "Fuerza 1 (Giro Suave)";
+      } else if (val === 10) {
+        strengthValue.textContent = "Fuerza 10 (Giro Extremo)";
+      } else {
+        strengthValue.textContent = `Fuerza ${val}`;
+      }
+    }
+
+    // RENDERIZADOR ÚNICO DEL CACHÉ EN MEMORIA
+    function rebuildWheelCache() {
+      const dpr = window.devicePixelRatio || 1;
+      const width = cacheCanvas.width;
+      const height = cacheCanvas.height;
+      
+      // Evitar cálculos si el canvas tiene dimensiones nulas
+      if (width <= 0 || height <= 0) return;
+
+      cacheCtx.clearRect(0, 0, width, height);
+      
+      const centerX = width / 2;
+      const centerY = height / 2;
+      
+      let radius = Math.min(width, height) / 2 - 10 * dpr;
+      if (radius <= 0) {
+        radius = 1;
+      }
+      
+      if (wheelSegments.length === 0) {
+        // Estado vacío dibujado en caché
+        cacheCtx.save();
+        cacheCtx.beginPath();
+        cacheCtx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+        cacheCtx.fillStyle = "#1e293b";
+        cacheCtx.fill();
+        cacheCtx.lineWidth = 4 * dpr;
+        cacheCtx.strokeStyle = "rgba(168, 85, 247, 0.3)";
+        cacheCtx.stroke();
+        
+        cacheCtx.fillStyle = "#94a3b8";
+        cacheCtx.font = `bold ${16 * dpr}px 'Plus Jakarta Sans'`;
+        cacheCtx.textAlign = "center";
+        cacheCtx.textBaseline = "middle";
+        cacheCtx.fillText("Ingresa nombres para activar", centerX, centerY);
+        cacheCtx.restore();
+        return;
+      }
+      
+      const anglePerSegment = (2 * Math.PI) / wheelSegments.length;
+      
+      // Dibujar segmentos de color sólido en el Canvas de Caché
+      for (let i = 0; i < wheelSegments.length; i++) {
+        const startAngle = i * anglePerSegment;
+        const endAngle = startAngle + anglePerSegment;
+        
+        cacheCtx.save();
+        cacheCtx.beginPath();
+        cacheCtx.moveTo(centerX, centerY);
+        cacheCtx.arc(centerX, centerY, radius, startAngle, endAngle);
+        cacheCtx.closePath();
+        
+        cacheCtx.fillStyle = segmentColors[i];
+        cacheCtx.fill();
+        
+        cacheCtx.lineWidth = 1 * dpr;
+        cacheCtx.strokeStyle = "rgba(15, 23, 42, 0.25)";
+        cacheCtx.stroke();
+        
+        // Dibujar el nombre en el sector correspondiente
+        cacheCtx.translate(centerX, centerY);
+        cacheCtx.rotate(startAngle + anglePerSegment / 2);
+        
+        cacheCtx.fillStyle = "#ffffff";
+        
+        let fontSize = Math.max(9, Math.min(22, 280 / wheelSegments.length)) * dpr;
+        cacheCtx.font = `800 ${fontSize}px 'Plus Jakarta Sans'`;
+        cacheCtx.textAlign = "right";
+        cacheCtx.textBaseline = "middle";
+        
+        // Sombra de los nombres
+        cacheCtx.shadowColor = "rgba(0,0,0,0.6)";
+        cacheCtx.shadowBlur = 3 * dpr;
+        
+        const nameText = wheelSegments[i];
+        const maxTextWidth = radius * 0.65;
+        let renderedText = nameText;
+        if (cacheCtx.measureText(renderedText).width > maxTextWidth) {
+          while (cacheCtx.measureText(renderedText + "...").width > maxTextWidth && renderedText.length > 0) {
+            renderedText = renderedText.slice(0, -1);
+          }
+          renderedText += "...";
+        }
+        
+        cacheCtx.fillText(renderedText, radius - 20 * dpr, 0);
+        cacheCtx.restore();
+      }
+
+      // Aplicar un ÚNICO gradiente radial de sombreado 3D arriba de la caché
+      cacheCtx.save();
+      cacheCtx.beginPath();
+      cacheCtx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+      
+      const overlayGrad = cacheCtx.createRadialGradient(
+        centerX, centerY, 0,
+        centerX, centerY, radius
+      );
+      overlayGrad.addColorStop(0, 'rgba(15, 23, 42, 0.85)'); // Foco interno de profundidad
+      overlayGrad.addColorStop(0.2, 'rgba(15, 23, 42, 0)');
+      overlayGrad.addColorStop(0.85, 'rgba(0, 0, 0, 0)');
+      overlayGrad.addColorStop(1, 'rgba(0, 0, 0, 0.45)');     // Sombra cilíndrica externa
+      
+      cacheCtx.fillStyle = overlayGrad;
+      cacheCtx.fill();
+      cacheCtx.restore();
+
+      // Borde circular brillante exterior
+      cacheCtx.save();
+      cacheCtx.beginPath();
+      cacheCtx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+      cacheCtx.lineWidth = 4 * dpr;
+      cacheCtx.strokeStyle = "rgba(255, 255, 255, 0.15)";
+      cacheCtx.stroke();
+      cacheCtx.restore();
+    }
+
+    // Dibujar la ruleta en el Canvas principal (60 FPS - EXTREMADAMENTE LIGERO)
+    function drawWheel() {
+      if (!canvas) return;
+      
+      const width = canvas.width;
+      const height = canvas.height;
+      
+      // Evitar llamar a drawImage si el canvas principal o de caché tiene dimensiones cero
+      if (width <= 0 || height <= 0 || cacheCanvas.width <= 0 || cacheCanvas.height <= 0) return;
+
+      ctx.clearRect(0, 0, width, height);
+      
+      const centerX = width / 2;
+      const centerY = height / 2;
+      
+      ctx.save();
+      ctx.translate(centerX, centerY);
+      ctx.rotate(rotation);
+      ctx.drawImage(cacheCanvas, -centerX, -centerY);
+      ctx.restore();
+    }
+
+    // Motor Físico (Bucle de Animación con Ahorro Inteligente de FPS)
+    let lastSegmentIndexCrossed = -1;
+    
+    function gameLoop(currentTime) {
+      if (!canvas) return;
+
+      let isMoving = false;
+
+      if (!isDragging) {
+        if (angularVelocity !== 0) {
+          rotation += angularVelocity;
+          angularVelocity *= friction;
+          isMoving = true;
+          
+          if (Math.abs(angularVelocity) < 0.0002) {
+            angularVelocity = 0;
+            if (isSpinning) {
+              isSpinning = false;
+              onSpinFinish();
+            }
+          }
+        }
+      } else {
+        isMoving = true; // El arrastre manual cuenta como movimiento activo
+      }
+
+      rotation = rotation % (2 * Math.PI);
+      if (rotation < 0) rotation += 2 * Math.PI;
+
+      // Sonido de clics mecánicos y secos al pasar cada sector por la aguja
+      if (wheelSegments.length > 0 && Math.abs(angularVelocity) > 0.001) {
+        const totalSegments = wheelSegments.length;
+        const anglePerSegment = (2 * Math.PI) / totalSegments;
+        
+        const pointerAngle = 1.5 * Math.PI;
+        let relativeAngle = pointerAngle - rotation;
+        if (relativeAngle < 0) relativeAngle += 2 * Math.PI;
+        
+        const currentSegmentIndex = Math.floor(relativeAngle / anglePerSegment) % totalSegments;
+        
+        if (currentSegmentIndex !== lastSegmentIndexCrossed) {
+          playTickSound();
+          lastSegmentIndexCrossed = currentSegmentIndex;
+        }
+      }
+
+      // Sólo redibujamos el Canvas si hay movimiento o si la configuración cambió
+      if (isMoving || needsRedraw) {
+        drawWheel();
+        needsRedraw = false;
+      }
+      
+      requestAnimationFrame(gameLoop);
+    }
+
+    // Lanzamiento por Botón
+    function spin() {
+      if (rawNames.length === 0) return;
+      if (isSpinning) return;
+
+      isSpinning = true;
+      setSpinButtonState(true);
+
+      const strength = parseInt(strengthSlider.value);
+      
+      let minTurns = 1;
+      let maxTurns = 2;
+      
+      if (strength > 1) {
+        minTurns = 1 + (strength - 1) * 1.25;
+        maxTurns = 2 + (strength - 1) * 1.5;
+      }
+
+      const exactTurns = minTurns + Math.random() * (maxTurns - minTurns);
+      const totalAngleToSpin = exactTurns * 2 * Math.PI;
+
+      const initialVelocity = totalAngleToSpin * (1 - friction);
+      angularVelocity = initialVelocity;
+    }
+
+    function setSpinButtonState(spinning) {
+      if (spinning) {
+        spinButton.disabled = true;
+        spinButton.classList.add('opacity-80', 'cursor-not-allowed');
+        spinSpinner.classList.remove('hidden');
+        spinIcon.classList.add('hidden');
+        spinText.textContent = "GIRANDO...";
+      } else {
+        spinButton.disabled = false;
+        spinButton.classList.remove('opacity-80', 'cursor-not-allowed');
+        spinSpinner.classList.add('hidden');
+        spinIcon.classList.remove('hidden');
+        spinText.textContent = "¡GIRAR RULETA!";
+      }
+    }
+
+    function onSpinFinish() {
+      setSpinButtonState(false);
+      
+      const totalSegments = wheelSegments.length;
+      const anglePerSegment = (2 * Math.PI) / totalSegments;
+      
+      const pointerAngle = 1.5 * Math.PI;
+      let relativeAngle = pointerAngle - rotation;
+      if (relativeAngle < 0) relativeAngle += 2 * Math.PI;
+      
+      const winnerIndex = Math.floor(relativeAngle / anglePerSegment) % totalSegments;
+      const winnerName = wheelSegments[winnerIndex];
+
+      winnerNameSpan.textContent = winnerName;
+      winnerModal.classList.remove('opacity-0', 'pointer-events-none');
+      
+      // Sonido de victoria retro súper satisfactorio
+      playVictorySound();
+    }
+
+    function closeWinnerModal() {
+      winnerModal.classList.add('opacity-0', 'pointer-events-none');
+      needsRedraw = true;
+    }
+
+    function removeWinnerAndClose() {
+      const winnerName = winnerNameSpan.textContent;
+      const indexInRaw = rawNames.indexOf(winnerName);
+      if (indexInRaw > -1) {
+        rawNames.splice(indexInRaw, 1);
+        updateUI();
+      }
+      closeWinnerModal();
+    }
+
+    // LÓGICA DE INTERACCIÓN DIRECTA
+    function getMouseAngle(e) {
+      const rect = canvas.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      
+      const x = clientX - (rect.left + rect.width / 2);
+      const y = clientY - (rect.top + rect.height / 2);
+      return Math.atan2(y, x);
+    }
+
+    function handleStart(e) {
+      if (wheelSegments.length === 0 || isSpinning) return;
+      
+      isDragging = true;
+      const mouseAngle = getMouseAngle(e);
+      startAngle = mouseAngle;
+      lastAngle = mouseAngle;
+      lastTime = performance.now();
+      dragVelocityHistory = [];
+    }
+
+    function handleMove(e) {
+      if (!isDragging) return;
+      e.preventDefault();
+
+      const mouseAngle = getMouseAngle(e);
+      const now = performance.now();
+      const deltaTime = now - lastTime;
+      
+      let angleDiff = mouseAngle - lastAngle;
+      
+      if (angleDiff > Math.PI) angleDiff -= 2 * Math.PI;
+      if (angleDiff < -Math.PI) angleDiff += 2 * Math.PI;
+
+      rotation += angleDiff;
+      needsRedraw = true; // Forzar redibujado instantáneo de la caché rotada
+      
+      if (deltaTime > 0) {
+        const instantVelocity = angleDiff;
+        dragVelocityHistory.push(instantVelocity);
+        if (dragVelocityHistory.length > 5) {
+          dragVelocityHistory.shift();
+        }
+      }
+
+      lastAngle = mouseAngle;
+      lastTime = now;
+    }
+
+    function handleEnd() {
+      if (!isDragging) return;
+      isDragging = false;
+
+      if (dragVelocityHistory.length > 0) {
+        const avgVelocity = dragVelocityHistory.reduce((sum, v) => sum + v, 0) / dragVelocityHistory.length;
+        
+        if (Math.abs(avgVelocity) > 0.01) {
+          isSpinning = true;
+          angularVelocity = avgVelocity * 1.5;
+          setSpinButtonState(true);
+        }
+      }
+    }
+
+    canvas.addEventListener('mousedown', handleStart);
+    window.addEventListener('mousemove', handleMove);
+    window.addEventListener('mouseup', handleEnd);
+
+    canvas.addEventListener('touchstart', handleStart, { passive: false });
+    window.addEventListener('touchmove', handleMove, { passive: false });
+    window.addEventListener('touchend', handleEnd);
+
+  </script>
+</body>
+</html>
